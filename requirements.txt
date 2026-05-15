@@ -1,0 +1,16 @@
+# ETL core
+requests==2.32.3
+pandas==2.2.3
+
+# Banco de dados
+sqlalchemy==2.0.36
+psycopg2-binary==2.9.10
+
+# Configuração
+pydantic-settings==2.6.1
+
+# Dashboard
+streamlit==1.40.2
+
+# Dev / qualidade (opcional, mas recomendado)
+python-dotenv==1.0.1   # fallback caso queira usar direto em scripts de teste
