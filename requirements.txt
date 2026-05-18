@@ -14,3 +14,4 @@ streamlit==1.40.2
 
 # Dev / qualidade (opcional, mas recomendado)
 python-dotenv==1.0.1   # fallback caso queira usar direto em scripts de teste
+plotly==5.22.0

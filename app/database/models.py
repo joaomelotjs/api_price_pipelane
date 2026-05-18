@@ -21,6 +21,8 @@ class Product(Base):
     category    = Column(String(100), nullable=False)
     description = Column(Text, nullable=True)
     image       = Column(String(1000), nullable=True)
+    rating_rate  = Column(Float, nullable=True)
+    rating_count = Column(Integer, nullable=True)
  
     # Campos de controle do pipeline
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)

@@ -1,23 +1,15 @@
 """
-dashboard/app.py
+streamlit_app.py
 ----------------
-Dashboard Streamlit para visualização dos dados do pipeline ETL.
-
-Seções:
-  1. Header + botão para rodar o pipeline
-  2. Cards de métricas gerais
-  3. Preço médio por categoria (gráfico de barras)
-  4. Range de preços por categoria (gráfico de barras agrupadas)
-  5. Top produtos avaliados (tabela estilizada)
-  6. Explorador de produtos (tabela completa com filtro)
+Ponto de entrada do dashboard — fica na raiz do projeto para que
+o Streamlit resolva os imports do pacote app corretamente.
 
 Como executar:
-  streamlit run app/dashboard/app.py
+  streamlit run streamlit_app.py
 """
 
 import streamlit as st
 import plotly.express as px
-import pandas as pd
 
 from app.database.queries import (
     get_all_products,
@@ -94,7 +86,7 @@ st.markdown('<div class="divider"></div>', unsafe_allow_html=True)
 
 # ── Carrega dados ─────────────────────────────────────────────────────────────
 
-@st.cache_data(ttl=300)  # cache por 5 minutos
+@st.cache_data(ttl=300)
 def load_data():
     return {
         "all":       get_all_products(),
@@ -104,10 +96,10 @@ def load_data():
     }
 
 data = load_data()
-df_all       = data["all"]
-df_avg       = data["avg_price"]
-df_range     = data["range"]
-df_top       = data["top"]
+df_all   = data["all"]
+df_avg   = data["avg_price"]
+df_range = data["range"]
+df_top   = data["top"]
 
 # ── Seção 1: Métricas gerais ─────────────────────────────────────────────────
 
@@ -228,11 +220,7 @@ df_top_display["rating_rate"] = df_top_display["rating_rate"].apply(lambda x: f"
 df_top_display["price"] = df_top_display["price"].apply(lambda x: f"$ {x:.2f}")
 df_top_display.columns = ["ID", "Produto", "Categoria", "Preço", "Avaliação", "Nº Avaliações"]
 
-st.dataframe(
-    df_top_display,
-    use_container_width=True,
-    hide_index=True,
-)
+st.dataframe(df_top_display, use_container_width=True, hide_index=True)
 
 st.markdown('<div class="divider"></div>', unsafe_allow_html=True)
 
