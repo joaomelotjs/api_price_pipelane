@@ -1,157 +1,243 @@
 # API Price Pipeline
 
-Pipeline ETL de dados de e-commerce construído com Python, PostgreSQL e Streamlit.
+ETL pipeline that extracts product data from a public e-commerce API, transforms it with Pandas, persists it in PostgreSQL, and visualizes it in an interactive Streamlit dashboard.
+
+Built as a portfolio project to practice real-world data engineering — with a focus on clean architecture, modular code, and professional organization.
+
+🔗 [View the live dashboard](https://apipricepipelane-9ympwvtp5eh8rst39sebvc.streamlit.app/)
 
 ---
 
-## Sobre o projeto
+## About the project
 
-O API Price Pipeline é um pipeline de dados que extrai informações de produtos de uma API pública de e-commerce, transforma e persiste em um banco de dados relacional, e apresenta os resultados em um dashboard interativo.
+The API Price Pipeline extracts product data from a public e-commerce API, applies transformations, persists the results in a cloud PostgreSQL database, and presents them through an interactive dashboard.
 
-O projeto foi desenvolvido como parte do meu processo de aprendizado em engenharia de dados, com foco em construir uma aplicação organizada, modular e tecnicamente consistente — próxima de um ambiente profissional real.
-
----
-
-## Funcionalidades
-
-- Extração de dados via API REST (Fake Store API)
-- Fallback para arquivo local em ambientes com restrições de rede
-- Transformação e limpeza dos dados com Pandas
-- Persistência em banco PostgreSQL na nuvem (Neon)
-- Dashboard interativo com Streamlit e Plotly
-- Deploy em nuvem via Streamlit Cloud
+This project was developed as part of my data engineering learning process, with the goal of building an organized, modular, and technically consistent application — close to a real professional environment.
 
 ---
 
 ## Stack
 
-| Camada | Tecnologia |
+| Layer | Technology |
 |---|---|
-| Extração | Python + Requests |
-| Transformação | Pandas |
-| Banco de dados | PostgreSQL (Neon) |
+| Extraction | Python + Requests |
+| Transformation | Pandas |
+| Database | PostgreSQL (Neon) |
 | ORM | SQLAlchemy + pg8000 |
 | Dashboard | Streamlit + Plotly |
-| Ambiente de desenvolvimento | GitHub Codespaces |
+| Dev environment | GitHub Codespaces |
 | Deploy | Streamlit Cloud |
 
 ---
 
-## Arquitetura
+## Project structure
 
 ```
 api_price_pipeline/
 │
 ├── app/
 │   ├── pipeline/
-│   │   ├── extract.py       # Extração via API ou arquivo local
-│   │   ├── transform.py     # Limpeza e transformação com Pandas
-│   │   ├── load.py          # Persistência no PostgreSQL
-│   │   └── pipeline.py      # Orquestração do fluxo ETL
+│   │   ├── extract.py       # Fetch raw data from API or local file
+│   │   ├── transform.py     # Clean and structure with Pandas
+│   │   ├── load.py          # Persist to PostgreSQL
+│   │   └── pipeline.py      # Orchestrates extract → transform → load
 │   │
 │   ├── database/
-│   │   ├── connection.py    # Conexão com o banco via SQLAlchemy
-│   │   ├── models.py        # Definição das tabelas
-│   │   └── queries.py       # Consultas reutilizáveis
+│   │   ├── connection.py    # SQLAlchemy engine and session management
+│   │   ├── models.py        # ORM table definitions
+│   │   └── queries.py       # Reusable queries for the dashboard
 │   │
 │   └── config/
-│       └── settings.py      # Variáveis de ambiente
+│       └── settings.py      # Reads and validates .env variables
 │
 ├── data/
-│   └── raw/                 # Dados brutos para fallback local
+│   └── raw/
+│       └── products.json    # Local data file (dev environment fallback)
 │
-├── streamlit_app.py         # Ponto de entrada do dashboard
+├── tests/
+│   ├── test_extract.py      # Unit tests for extraction module
+│   └── test_transform.py    # Unit tests for transformation module
+│
+├── streamlit_app.py         # Dashboard entry point
+├── Dockerfile               # Containerizes the ETL pipeline
+├── docker-compose.yml       # Runs the pipeline in a container
 ├── requirements.txt
-└── .gitignore
+└── .env                     # Not versioned — see .env.example
 ```
 
 ---
 
-## Fluxo ETL
+## Pipeline architecture
 
 ```
-Fake Store API
-      ↓
-  extract.py
-      ↓
- transform.py
-      ↓
-   load.py
-      ↓
-PostgreSQL (Neon)
-      ↓
- streamlit_app.py
+Fake Store API / local JSON
+        ↓
+   extract.py       → list[dict]  (raw data, no transformation)
+        ↓
+  transform.py      → pd.DataFrame (clean, typed, rating extracted)
+        ↓
+    load.py         → PostgreSQL via SQLAlchemy (bulk insert)
+        ↓
+   queries.py       → analytical queries for the dashboard
+        ↓
+streamlit_app.py    → Streamlit + Plotly visualization
 ```
 
 ---
 
 ## Dashboard
 
-O dashboard apresenta quatro seções:
+Four sections powered by direct SQL queries against PostgreSQL:
 
-- **Visão Geral** — métricas gerais do catálogo de produtos
-- **Preço médio por categoria** — comparativo entre categorias
-- **Range de preços** — distribuição de preços dos produtos
-- **Top avaliados** — produtos com melhor avaliação
-
-- View the live dashboard : https://apipricepipelane-9ympwvtp5eh8rst39sebvc.streamlit.app/
-
----
-
-## Decisões técnicas
-
-**Driver pg8000 no lugar de psycopg2**
-O psycopg2 apresenta incompatibilidade com Python 3.14 no Streamlit Cloud. O pg8000 é um driver puro Python, sem dependências nativas, e resolve o problema sem comprometer a funcionalidade.
-
-**SSL via connect_args**
-A configuração de SSL com Neon foi feita via `connect_args={"ssl_context": True}` no SQLAlchemy, que é o formato correto para o pg8000.
-
-**Fallback local no extract.py**
-A Fake Store API bloqueia requisições vindas do GitHub Codespaces via Cloudflare. Em desenvolvimento, o pipeline lê de `data/raw/products.json`. Em produção, a extração ocorre diretamente via API REST.
+- **Overview** — total products, categories, average price, top-rated product
+- **Average price by category** — bar chart
+- **Price range by category** — grouped bar chart (min vs max)
+- **Top 5 rated products** — sortable table
+- **Product explorer** — full table with category filter
 
 ---
 
-## Como executar localmente
+## Data source
 
-**1. Clone o repositório**
+**Fake Store API** — `https://fakestoreapi.com/products`
+
+Public API, no authentication required. Returns 20 products with: `id`, `title`, `price`, `category`, `description`, `image`, `rating`.
+
+> **Note:** In GitHub Codespaces, the API is blocked by Cloudflare. Raw data is loaded from `data/raw/products.json` instead. To fetch live data, download the JSON from the URL above and save it to that path.
+
+---
+
+## Setup
+
+**1. Clone the repository**
 ```bash
-git clone https://github.com/seu-usuario/api_price_pipeline.git
+git clone https://github.com/joaomelotjs/api_price_pipeline.git
 cd api_price_pipeline
 ```
 
-**2. Instale as dependências**
+**2. Install dependencies**
 ```bash
 pip install -r requirements.txt
 ```
 
-**3. Configure as variáveis de ambiente**
-
-Crie um arquivo `.env` na raiz com:
-```
-DATABASE_URL=postgresql+pg8000://user:password@host.neon.tech/dbname
+**3. Configure environment variables**
+```bash
+cp .env.example .env
 ```
 
-**4. Execute o pipeline**
+Edit `.env` with your Neon connection string:
+```env
+DATABASE_URL=postgresql+pg8000://user:password@host/dbname?sslmode=require
+API_URL=https://fakestoreapi.com/products
+LOG_LEVEL=INFO
+```
+
+**4. Create the database table**
+```bash
+python -c "from app.database.models import create_tables; create_tables()"
+```
+
+**5. Run the pipeline**
 ```bash
 python -m app.pipeline.pipeline
 ```
 
-**5. Inicie o dashboard**
+**6. Launch the dashboard**
 ```bash
 streamlit run streamlit_app.py
 ```
 
 ---
 
-## Sobre o desenvolvimento
+## Docker
 
-Este projeto foi desenvolvido como parte do meu aprendizado prático em engenharia de dados. O objetivo foi construir um pipeline ETL real — com decisões técnicas justificadas, arquitetura modular e deploy funcional — como base para meu portfólio na área.
+The ETL pipeline can be run in a container — no local Python setup required.
 
-Tecnologias, decisões de arquitetura e limitações encontradas foram documentadas ao longo do desenvolvimento para refletir um processo de trabalho organizado e profissional.
+**Build the image**
+```bash
+docker build -t api-price-pipeline .
+```
+
+**Run the pipeline**
+```bash
+docker run --env-file .env api-price-pipeline
+```
+
+**Or with docker compose**
+```bash
+docker compose up
+```
+
+> The database (Neon) and dashboard (Streamlit Cloud) run outside the container. Docker is used only to containerize and run the ETL pipeline in an isolated, reproducible environment.
 
 ---
 
-## Autor
+## Deploy (Streamlit Cloud)
 
-João Pedro Melo
+1. Push the repository to GitHub
+2. Go to [share.streamlit.io](https://share.streamlit.io) and connect your GitHub account
+3. Click **New app** and fill in:
+   - **Repository:** `joaomelotjs/api_price_pipeline`
+   - **Branch:** `main`
+   - **Main file path:** `streamlit_app.py`
+4. Click **Advanced settings → Secrets** and add:
+```
+DATABASE_URL = "postgresql+pg8000://user:password@host/dbname?sslmode=require"
+```
+5. Set **Python version** to `3.12`
+6. Click **Deploy**
+
+> The dashboard reads data directly from PostgreSQL — no need to run the pipeline on the cloud. Run `python -m app.pipeline.pipeline` locally whenever you want to refresh the data.
+
+---
+
+## Tests
+
+Unit tests cover the extraction and transformation modules.
+
+**Run all tests**
+```bash
+pytest tests/ -v
+```
+
+**Coverage**
+- `test_extract.py` — local file loading, data structure, error handling
+- `test_transform.py` — rating unnesting, expected columns, data types, null handling
+
+---
+
+## Technical decisions
+
+**pg8000 instead of psycopg2**
+psycopg2 is incompatible with Python 3.14 on Streamlit Cloud. pg8000 is a pure Python driver with no native dependencies, and resolves the issue without compromising functionality.
+
+**SSL via connect_args**
+SSL configuration with Neon was done via `connect_args={"ssl_context": True}` in SQLAlchemy — the correct format for pg8000.
+
+**Local fallback in extract.py**
+The Fake Store API blocks requests from GitHub Codespaces via Cloudflare. In development, the pipeline reads from `data/raw/products.json`. In production, extraction happens directly via the REST API.
+
+---
+
+## Environment variables
+
+| Variable | Required | Default | Description |
+|---|---|---|---|
+| `DATABASE_URL` | ✅ | — | PostgreSQL connection string |
+| `API_URL` | ❌ | `https://fakestoreapi.com/products` | API endpoint |
+| `LOG_LEVEL` | ❌ | `INFO` | Logging verbosity |
+
+---
+
+## About this project
+
+This project was developed as part of my practical learning in data engineering. The goal was to build a real ETL pipeline — with justified technical decisions, modular architecture, and functional deploy — as a foundation for my portfolio in the field.
+
+Technologies, architectural decisions, and limitations encountered along the way were documented throughout development to reflect an organized and professional working process.
+
+---
+
+## Author
+
+**João Pedro Melo**
 [github.com/joaomelotjs](https://github.com/joaomelotjs)
