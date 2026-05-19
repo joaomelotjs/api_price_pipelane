@@ -28,16 +28,19 @@ from app.config.settings import settings
 # Garante compatibilidade com pg8000 no Streamlit Cloud
 db_url = settings.DATABASE_URL.replace("postgresql+psycopg2://", "postgresql+pg8000://")
 db_url = db_url.replace("postgresql://", "postgresql+pg8000://")
+db_url = db_url.replace("?sslmode=require", "")  # pg8000 trata SSL diferente
 
 
 # Engine principal — reutilizado em todo o projeto
 engine = create_engine(
-     db_url,
-    pool_pre_ping=True,   # detecta conexões mortas antes de reutilizá-las
-    pool_size=5,          # conexões mantidas abertas no pool
-    max_overflow=10,      # conexões extras permitidas sob carga
-    echo=False,           # mudar para True para ver SQL no terminal (debug)
+    db_url,
+    pool_pre_ping=True,
+    pool_size=5,
+    max_overflow=10,
+    echo=False,
+    connect_args={"ssl_context": True},  # SSL para pg8000
 )
+
 
 # Fábrica de sessões ORM
 SessionLocal = sessionmaker(

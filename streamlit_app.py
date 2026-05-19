@@ -10,8 +10,7 @@ Como executar:
 
 import streamlit as st
 import plotly.express as px
-import os
-st.write("DATABASE_URL prefix:", os.environ.get("DATABASE_URL", "NÃO ENCONTRADA")[:30])
+
 
 from app.database.queries import (
     get_all_products,
