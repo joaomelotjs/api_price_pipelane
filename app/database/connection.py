@@ -25,10 +25,14 @@ from sqlalchemy.orm import sessionmaker, Session
 
 from app.config.settings import settings
 
+# Garante compatibilidade com pg8000 no Streamlit Cloud
+db_url = settings.DATABASE_URL.replace("postgresql+psycopg2://", "postgresql+pg8000://")
+db_url = db_url.replace("postgresql://", "postgresql+pg8000://")
+
 
 # Engine principal — reutilizado em todo o projeto
 engine = create_engine(
-    settings.DATABASE_URL,
+     db_url,
     pool_pre_ping=True,   # detecta conexões mortas antes de reutilizá-las
     pool_size=5,          # conexões mantidas abertas no pool
     max_overflow=10,      # conexões extras permitidas sob carga
