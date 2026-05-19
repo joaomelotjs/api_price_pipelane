@@ -1,0 +1,16 @@
+# docker-compose.yml
+# -------------------
+# Sobe o pipeline ETL em um container isolado.
+# Banco continua no Neon — não entra no compose.
+#
+# Como usar:
+#   docker compose up
+
+services:
+  pipeline:
+    build: .
+    env_file:
+      - .env
+    volumes:
+      # Monta a pasta data para persistir o products.json dentro do container
+      - ./data:/app/data
