@@ -78,7 +78,7 @@ cp .env.example .env
 
 Edit `.env` with your Neon connection string:
 ```env
-DATABASE_URL=postgresql+psycopg2://user:password@host/dbname?sslmode=require
+DATABASE_URL=postgresql+pg8000://user:password@host/dbname?sslmode=require
 API_URL=https://fakestoreapi.com/products
 LOG_LEVEL=INFO
 ```
@@ -130,10 +130,29 @@ streamlit_app.py    → Streamlit + Plotly visualization
 
 ---
 
+## Deploy (Streamlit Cloud)
+
+1. Push the repository to GitHub
+2. Go to [share.streamlit.io](https://share.streamlit.io) and connect your GitHub account
+3. Click **New app** and fill in:
+   - **Repository:** `your-username/api_price_pipelane`
+   - **Branch:** `main`
+   - **Main file path:** `streamlit_app.py`
+4. Click **Advanced settings → Secrets** and add:
+```
+DATABASE_URL = "postgresql+pg8000://user:password@host/dbname?sslmode=require"
+```
+5. Set **Python version** to `3.12`
+6. Click **Deploy**
+
+> The dashboard reads data directly from PostgreSQL — no need to run the pipeline on the cloud. Run `python -m app.pipeline.pipeline` locally whenever you want to refresh the data.
+
+---
+
 ## Environment Variables
 
 | Variable | Required | Default | Description |
 |---|---|---|---|
 | `DATABASE_URL` | ✅ | — | PostgreSQL connection string |
 | `API_URL` | ❌ | `https://fakestoreapi.com/products` | API endpoint |
-| `LOG_LEVEL` | ❌ | `INFO` | Logging verbosity |# api_price_pipelane
+| `LOG_LEVEL` | ❌ | `INFO` | Logging verbosity |
