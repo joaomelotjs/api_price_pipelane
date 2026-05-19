@@ -95,6 +95,8 @@ O dashboard apresenta quatro seções:
 - **Top avaliados** — produtos com melhor avaliação
 - Ver Dashboard ao vivo : https://apipricepipelane-9ympwvtp5eh8rst39sebvc.streamlit.app/
 
+- View the live dashboard : https://apipricepipelane-9ympwvtp5eh8rst39sebvc.streamlit.app/
+
 ---
 
 ## Decisões técnicas
