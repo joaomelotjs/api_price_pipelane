@@ -93,6 +93,7 @@ O dashboard apresenta quatro seções:
 - **Preço médio por categoria** — comparativo entre categorias
 - **Range de preços** — distribuição de preços dos produtos
 - **Top avaliados** — produtos com melhor avaliação
+- Ver Dashboard ao vivo : https://apipricepipelane-9ympwvtp5eh8rst39sebvc.streamlit.app/
 
 ---
 
